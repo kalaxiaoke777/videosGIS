@@ -1,0 +1,6 @@
+// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
+// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
+//>>built
+define("../../chunks/_rollupPluginBabelHelpers ../../chunks/tslib.es6 ../../core/jsonMap ../../core/JSONSupport ../../core/accessorSupport/decorators/property ../../core/has ../../core/accessorSupport/ensureType ../../core/Logger ../../core/accessorSupport/decorators/subclass".split(" "),function(k,c,b,a,e,m,n,p,l){var f;b=new b.JSONMap({asc:"ascending",desc:"descending"});a=f=function(h){function g(){var d=h.apply(this,arguments)||this;d.field=null;d.valueExpression=null;d.order="ascending";return d}
+k._inheritsLoose(g,h);g.prototype.clone=function(){return new f({field:this.field,valueExpression:this.valueExpression,order:this.order})};return g}(a.JSONSupport);c.__decorate([e.property({type:String,json:{write:!0}})],a.prototype,"field",void 0);c.__decorate([e.property({type:String,json:{write:!0}})],a.prototype,"valueExpression",void 0);c.__decorate([e.property({type:b.apiValues,json:{read:b.read,write:b.write}})],a.prototype,"order",void 0);return a=f=c.__decorate([l.subclass("esri.layers.support.OrderByInfo")],
+a)});

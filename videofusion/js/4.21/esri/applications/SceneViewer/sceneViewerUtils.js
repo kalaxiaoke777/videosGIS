@@ -1,0 +1,6 @@
+// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
+// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
+//>>built
+define(["exports","../../chunks/_rollupPluginBabelHelpers","../../core/Logger","../../layers/support/arcgisLayerUrl","../../symbols/support/svgUtils"],function(b,f,g,h,k){function d(){d=f._asyncToGenerator(function*(a,c,e="awaiting-feature-creation-info"){yield a.startBatchCreateWorkflow(c,e)});return d.apply(this,arguments)}const l=g.getLogger("sceneViewer.appState.saveState");b.batchCreateGetNumPendingFeatures=function(a){a=a.activeWorkflow;return"batch-create"===(null==a?void 0:a.type)?a.numPendingFeatures:
+0};b.getActiveWorkflowState=function(a){return a.state};b.getActiveWorkflowType=function(a){var c;return null==(c=a.activeWorkflow)?void 0:c.type};b.isHostedAgolServiceUrl=function(a){return h.isHostedAgolService(a)};b.numberOfFeatureTemplates=function(a){return a.numberOfFeatureTemplates};b.renderSVG=function(a,c,e,m){return k.renderSVG(a,c,e,m)};b.saveStateWarning=function(a,c){return l.warn(a,c)};b.startBatchCreateWorkflow=function(a,c){return d.apply(this,arguments)};Object.defineProperty(b,"__esModule",
+{value:!0})});

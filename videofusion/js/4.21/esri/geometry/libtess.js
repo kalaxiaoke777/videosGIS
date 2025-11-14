@@ -1,0 +1,5 @@
+// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
+// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
+//>>built
+define(["require","exports","../chunks/_rollupPluginBabelHelpers","../assets","../core/has"],function(g,c,h,l,m){function d(){d=h._asyncToGenerator(function*(){e||(e=n());return e});return d.apply(this,arguments)}function n(){return f.apply(this,arguments)}function f(){f=h._asyncToGenerator(function*(){k=yield(m("csp-restrictions")?yield(new Promise(function(a,b){g(["../chunks/libtess-asm"],a,b)})).then(function(a){return a.libtessAsm}):yield(new Promise(function(a,b){g(["../chunks/libtess"],a,b)})).then(function(a){return a.libtess})).load({locateFile:()=>
+l.getAssetUrl("esri/core/libs/libtess/libtess.wasm")})});return f.apply(this,arguments)}let e=null,k=null;c.loadLibtess=function(){return d.apply(this,arguments)};c.triangulate=function(a,b){return k.triangulate(a,b,Math.max(a.length,128E3))};Object.defineProperty(c,"__esModule",{value:!0})});

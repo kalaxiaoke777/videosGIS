@@ -1,0 +1,4 @@
+// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
+// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
+//>>built
+define(["./componentsUtils"],function(a){a.register({"calcite-block":a.CalciteBlock,"calcite-scrim":a.CalciteScrim,"calcite-icon":a.CalciteIcon,"calcite-handle":a.CalciteHandle,"calcite-loader":a.CalciteLoader,"calcite-action-menu":a.CalciteActionMenu,"calcite-action":a.CalciteAction,"calcite-tooltip-manager":a.CalciteTooltipManager,"calcite-popover":a.CalcitePopover,"calcite-block-section":a.CalciteBlockSection,"calcite-switch":a.CalciteSwitch})});

@@ -1,0 +1,5 @@
+// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
+// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
+//>>built
+define(["exports","./events","./handleUtils","./maybe","./accessorSupport/watch"],function(k,m,t,n,p){function q(a,e,d={},b){let g=null;const l=d.once?(c,f)=>{b(c)&&(n.removeMaybe(g),e(c,f))}:(c,f)=>{b(c)&&e(c,f)};g=p.watchTracked(a,l,d.sync);d.immediate&&(a=a(),l(a,a));return g}function u(a){return!0}function v(a){return!!a}k.SYNC_AND_IMMEDIATE={sync:!0,immediate:!0};k.react=function(a,e,d={}){return q(a,e,d,u)};k.reactListener=function(a,e,d,b={}){function g(){c&&f&&(f.remove(),null==b.onListenerRemove?
+void 0:b.onListenerRemove(c),f=c=null)}function l(h){b.once&&b.once&&n.removeMaybe(r);d(h)}let c=null,f=null,r=null;const w=p.watchTracked(a,(h,x)=>{g();m.isEventTarget(h)&&(c=h,f=m.on(h,e,l),null==b.onListenerAdd?void 0:b.onListenerAdd(h))},b.sync);return r=t.makeHandle(()=>{w.remove();g()})};k.reactTruthy=function(a,e,d={}){return q(a,e,d,v)};Object.defineProperty(k,"__esModule",{value:!0})});

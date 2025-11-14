@@ -1,0 +1,6 @@
+// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
+// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
+//>>built
+define(["exports","../../core/has","../../chunks/vec3f64","../../geometry/support/aaBoundingBox"],function(b,p,n,g){const h=g.fromValues(-.5,-.5,-.5,.5,.5,.5),k=g.fromValues(-.5,-.5,0,.5,.5,1),l=g.fromValues(-.5,-.5,0,.5,.5,.5);b.OBJECT_SYMBOL_LAYER_BOUNDING_BOX_TETRAHEDRON=l;b.OBJECT_SYMBOL_LAYER_BOUNDING_BOX_UNIT_CUBE=h;b.OBJECT_SYMBOL_LAYER_BOUNDING_BOX_UNIT_CYLINDER=k;b.linePatterns="dash dash-dot dot long-dash long-dash-dot long-dash-dot-dot none short-dash short-dash-dot short-dash-dot-dot short-dot solid".split(" ");
+b.objectSymbolLayerPrimitiveBoundingBox=function(c){switch(c){case "sphere":case "cube":case "diamond":return h;case "cylinder":case "cone":case "inverted-cone":return k;case "tetrahedron":return l}};b.objectSymbolLayerSizeWithResourceSize=function(c,{isPrimitive:e,width:d,depth:a,height:f}){e=e?10:1;if(null==d&&null==f&&null==a)return[e*c[0],e*c[1],e*c[2]];d=n.fromValues(d,a,f);let m;for(a=0;3>a;a++)if(f=d[a],null!=f){m=f/c[a];break}for(a=0;3>a;a++)null==d[a]&&(d[a]=c[a]*m);return d};Object.defineProperty(b,
+"__esModule",{value:!0})});

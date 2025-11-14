@@ -1,0 +1,6 @@
+// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
+// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
+//>>built
+define(["exports","../../../../chunks/_rollupPluginBabelHelpers","../../engine/Bitmap","../../engine/BitmapContainer"],function(e,l,p,d){d=function(f){function g(b){var a=f.call(this)||this;a.requestRender=a.requestRender.bind(l._assertThisInitialized(a));a._layerView=b;a._canvas=document.createElement("canvas");a._context=a._canvas.getContext("2d");a._bitmap=new p.Bitmap(null,"standard",!1);a.addChild(a._bitmap);return a}l._inheritsLoose(g,f);var m=g.prototype;m.doRender=function(b){const a=b.state,
+n=this._createCustomRenderParams(b),h=n.pixelRatio,k=this._canvas,c=this._bitmap;k.width=a.size[0]*h;k.height=a.size[1]*h;c.resolution=a.resolution;c.pixelRatio=h;c.x=a.viewpoint.targetGeometry.x-Math.abs(a.extent.xmax-a.extent.xmin)/2;c.y=a.viewpoint.targetGeometry.y+Math.abs(a.extent.ymax-a.extent.ymin)/2;this._layerView.render(n);c.source=k;c.rotation=a.rotation;f.prototype.doRender.call(this,b)};m._createCustomRenderParams=function(b){const a=window.devicePixelRatio;return{...b,pixelRatio:a,context:this._context,
+state:{...b.state,pixelRatio:a}}};return g}(d.BitmapContainer);e.Display=d;e["default"]=d;Object.defineProperty(e,"__esModule",{value:!0})});

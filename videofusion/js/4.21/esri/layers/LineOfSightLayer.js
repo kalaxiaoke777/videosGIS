@@ -1,0 +1,6 @@
+// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
+// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
+//>>built
+define("../chunks/_rollupPluginBabelHelpers ../chunks/tslib.es6 ../core/Collection ../core/collectionUtils ../core/accessorSupport/decorators/property ../core/has ../core/accessorSupport/ensureType ../core/Logger ../core/accessorSupport/decorators/subclass ../geometry/Point ./Layer ./LineOfSightTarget".split(" "),function(f,c,g,h,d,b,q,r,l,m,n,p){b=function(k){function e(a){a=k.call(this,a)||this;a.type="line-of-sight";a.observer=null;a.fullExtent=null;return a}f._inheritsLoose(e,k);f._createClass(e,
+[{key:"targets",get:function(){return this._get("targets")||new g},set:function(a){this._set("targets",h.referenceSetter(a,this.targets))}}]);return e}(n);c.__decorate([d.property({readOnly:!0})],b.prototype,"type",void 0);c.__decorate([d.property()],b.prototype,"intersection",void 0);c.__decorate([d.property({type:m})],b.prototype,"observer",void 0);c.__decorate([d.property({cast:h.castForReferenceSetter,type:g.ofType(p["default"]),nonNullable:!0})],b.prototype,"targets",null);return b=c.__decorate([l.subclass("esri.layers.LineOfSightLayer")],
+b)});

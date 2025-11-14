@@ -1,0 +1,5 @@
+/*
+All material copyright ESRI, All Rights Reserved, unless otherwise specified.
+See https://js.arcgis.com/4.21/esri/copyright.txt for details.
+*/
+import t from"../Color.js";import"../core/lang.js";import{j as o}from"./mathUtils.js";import{f as s}from"./aaBoundingBox.js";const n=new t("white");new t("black");const e=new t([255,255,255,0]);function r(t){return 0===t.r&&0===t.g&&0===t.b}function a(t,{isPrimitive:s,width:n,depth:e,height:r}){const a=s?10:1;if(null==n&&null==r&&null==e)return[a*t[0],a*t[1],a*t[2]];const d=o(n,e,r);let c;for(let o=0;o<3;o++){const s=d[o];if(null!=s){c=s/t[o];break}}for(let o=0;o<3;o++)null==d[o]&&(d[o]=t[o]*c);return d}const d=s(-.5,-.5,-.5,.5,.5,.5),c=s(-.5,-.5,0,.5,.5,1),i=s(-.5,-.5,0,.5,.5,.5);function l(t){switch(t){case"sphere":case"cube":case"diamond":return d;case"cylinder":case"cone":case"inverted-cone":return c;case"tetrahedron":return i;default:return}}const h=["dash","dash-dot","dot","long-dash","long-dash-dot","long-dash-dot-dot","none","short-dash","short-dash-dot","short-dash-dot-dot","short-dot","solid"];export{a,r as i,h as l,l as o,e as t,n as w};
