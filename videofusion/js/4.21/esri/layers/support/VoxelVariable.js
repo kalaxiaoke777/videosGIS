@@ -1,6 +1,0 @@
-// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
-// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
-//>>built
-define("../../chunks/_rollupPluginBabelHelpers ../../chunks/tslib.es6 ../../core/JSONSupport ../../core/accessorSupport/decorators/property ../../core/has ../../core/accessorSupport/ensureType ../../core/Logger ../../core/accessorSupport/decorators/subclass ./VoxelFormat".split(" "),function(h,b,a,c,l,m,n,k,e){a=function(f){function g(){var d=f.apply(this,arguments)||this;d.description="";d.originalFormat=null;d.renderingFormat=null;d.unit=null;d.volumeId=0;return d}h._inheritsLoose(g,f);return g}(a.JSONSupport);
-b.__decorate([c.property({type:Number,json:{write:!0}})],a.prototype,"id",void 0);b.__decorate([c.property({type:String,json:{write:!0}})],a.prototype,"description",void 0);b.__decorate([c.property({type:String,json:{write:!0}})],a.prototype,"name",void 0);b.__decorate([c.property({type:e,json:{write:!0}})],a.prototype,"originalFormat",void 0);b.__decorate([c.property({type:e,json:{write:!0}})],a.prototype,"renderingFormat",void 0);b.__decorate([c.property({type:String,json:{write:!0}})],a.prototype,
-"unit",void 0);b.__decorate([c.property({type:Number,json:{write:!0}})],a.prototype,"volumeId",void 0);return a=b.__decorate([k.subclass("esri.layers.support.VoxelVariable")],a)});

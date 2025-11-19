@@ -1,5 +1,0 @@
-/*
-All material copyright ESRI, All Rights Reserved, unless otherwise specified.
-See https://js.arcgis.com/4.21/esri/copyright.txt for details.
-*/
-import{B as t}from"./Bitmap.js";import{B as e}from"./BitmapContainer.js";class i extends e{constructor(e){super(),this.requestRender=this.requestRender.bind(this),this._layerView=e,this._canvas=document.createElement("canvas"),this._context=this._canvas.getContext("2d"),this._bitmap=new t(null,"standard",!1),this.addChild(this._bitmap)}doRender(t){const e=t.state,i=this._createCustomRenderParams(t),s=i.pixelRatio,a=this._canvas,n=this._bitmap;a.width=e.size[0]*s,a.height=e.size[1]*s,n.resolution=e.resolution,n.pixelRatio=s,n.x=e.viewpoint.targetGeometry.x-Math.abs(e.extent.xmax-e.extent.xmin)/2,n.y=e.viewpoint.targetGeometry.y+Math.abs(e.extent.ymax-e.extent.ymin)/2,this._layerView.render(i),n.source=a,n.rotation=e.rotation,super.doRender(t)}_createCustomRenderParams(t){const e=window.devicePixelRatio,i={...t.state,pixelRatio:e};return{...t,pixelRatio:e,context:this._context,state:i}}}export{i as D};

@@ -1,4 +1,0 @@
-// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
-// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
-//>>built
-define(["../../../../../../core/maybe","../../../../../../symbols/cim/effects/CIMEffectHelper"],function(h,d){return function(){function g(){}var e=g.prototype;e.bindFeature=function(c,a,b){};e.write=function(c,a,b){if(h.isNone(this._effects))return this._write(c,a);b=d.CIMEffectHelper.executeEffects(this._effects,a.readLegacyGeometryForDisplay());let f=d.CIMEffectHelper.next(b);for(;f;)this._write(c,a,f),f=d.CIMEffectHelper.next(b)};e._write=function(c,a,b){};return g}()});

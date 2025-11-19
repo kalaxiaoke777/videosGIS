@@ -1,5 +1,0 @@
-// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
-// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
-//>>built
-define("../chunks/_rollupPluginBabelHelpers ../chunks/tslib.es6 ../core/accessorSupport/decorators/property ../core/has ../core/accessorSupport/ensureType ../core/Logger ../core/accessorSupport/decorators/subclass ./Layer".split(" "),function(g,c,d,b,l,m,h,k){b=function(e){function f(a){a=e.call(this,a)||this;a.type="slice";a.tiltEnabled=!1;a.plane=null;a.fullExtent=null;return a}g._inheritsLoose(f,e);return f}(k);c.__decorate([d.property()],b.prototype,"type",void 0);c.__decorate([d.property()],
-b.prototype,"tiltEnabled",void 0);c.__decorate([d.property()],b.prototype,"plane",void 0);return b=c.__decorate([h.subclass("esri.layers.tools.SliceLayer")],b)});

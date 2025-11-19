@@ -1,5 +1,0 @@
-// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
-// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
-//>>built
-define("exports ../../chunks/_rollupPluginBabelHelpers ../../chunks/tslib.es6 ../../core/JSONSupport ../../core/accessorSupport/decorators/property ../../core/has ../../core/accessorSupport/ensureType ../../core/Logger ../../core/accessorSupport/decorators/subclass ../../views/3d/environment/Clouds ../Lighting".split(" "),function(a,l,b,m,g,p,q,r,n,h,c){var d;a.SlideEnvironment=d=function(k){function e(){var f=k.apply(this,arguments)||this;f.lighting=new c;f.clouds=null;return f}l._inheritsLoose(e,
-k);e.prototype.clone=function(){return new d({lighting:c.prototype.clone.call(this.lighting),clouds:h.prototype.clone.call(this.clouds)})};return e}(m.JSONSupport);b.__decorate([g.property({type:c,json:{write:!0}})],a.SlideEnvironment.prototype,"lighting",void 0);b.__decorate([g.property({type:h,json:{write:!1}})],a.SlideEnvironment.prototype,"clouds",void 0);a.SlideEnvironment=d=b.__decorate([n.subclass("esri.webscene.Environment")],a.SlideEnvironment);Object.defineProperty(a,"__esModule",{value:!0})});

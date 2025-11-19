@@ -1,5 +1,0 @@
-// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
-// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
-//>>built
-define(["exports","../../../chunks/vec2","../../../chunks/vec2f64","../viewpointUtils"],function(f,e,k,l){f.createTransformState=function(a){if(!a)return null;const m=a.inverseTransform,n=a.transform,p=a.transformNoRotation,g=a.pixelRatio,h=[a.size[0],a.size[1]],d=a.viewpoint.targetGeometry,q=k.fromValues(d.x,d.y);return{version:a.id,displayMat3:a.displayMat3.slice(),displayViewMat3:a.displayViewMat3.slice(),viewMat2d:a.viewMat2d.slice(),extent:a.extent.toJSON(),resolution:a.resolution,rotation:a.rotation,
-size:h,scale:a.scale,center:[d.x,d.y],spatialReference:a.spatialReference,pixelRatio:g,viewpoint:a.viewpoint,worldScreenWidth:a.worldScreenWidth,toMap(b,c){return e.transformMat2d(b,c,m)},toScreen(b,c){return e.transformMat2d(b,c,n)},toScreenNoRotation(b,c){return e.transformMat2d(b,c,p)},getScreenTransform:(b,c)=>{l.getMatrix(b,q,h,c,0,g);return b}}};Object.defineProperty(f,"__esModule",{value:!0})});

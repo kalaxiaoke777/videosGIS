@@ -1,4 +1,0 @@
-// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
-// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
-//>>built
-define("../../chunks/_rollupPluginBabelHelpers ../../chunks/tslib.es6 ../../core/accessorSupport/decorators/property ../../core/has ../../core/accessorSupport/ensureType ../../core/Logger ../../core/accessorSupport/decorators/subclass ./MomentElementViewModel".split(" "),function(d,e,a,k,l,m,f,g){a=function(b){function c(h){return b.call(this,h)||this}d._inheritsLoose(c,b);return c}(g);return a=e.__decorate([f.subclass("esri.widgets.support.DatePickerViewModel")],a)});

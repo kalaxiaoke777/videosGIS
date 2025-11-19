@@ -177,14 +177,36 @@
       .info-item strong {
         color: #333;
       }
-
       .info-value {
         color: #667eea;
         font-weight: 600;
-      }      /* 右侧视频预览 - 隐藏 */
+      }
+
+      /* 点位列表样式 */
+      .point-item {
+        padding: 10px;
+        margin-bottom: 8px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        border-left: 3px solid #667eea;
+        font-size: 12px;
+      }
+
+      .point-item-header {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+      }
+
+      .point-coords {
+        color: #666;
+        font-family: "Courier New", monospace;
+        line-height: 1.4;
+      } /* 右侧视频预览 - 隐藏 */
       #videoContainer {
         display: none;
-      }      #videoContainer h3 {
+      }
+      #videoContainer h3 {
         display: none;
       }
 
@@ -220,7 +242,7 @@
         to {
           transform: rotate(360deg);
         }
-      }      /* 响应式调整 */
+      } /* 响应式调整 */
       @media (max-width: 1200px) {
         #controlPanel {
           width: 280px;
@@ -247,6 +269,14 @@
             完成绘制
           </button>
         </div>
+        <button
+          id="btnAddPoint"
+          class="btn-primary"
+          style="width: 100%; margin-bottom: 10px"
+          disabled
+        >
+          ➕ 添加点位
+        </button>
         <button id="btnClearDraw" class="btn-danger" style="width: 100%">
           清除区域
         </button>
@@ -254,7 +284,6 @@
           >点击"开始绘制"后，在地图上依次点击添加多边形顶点</span
         >
       </div>
-
       <div class="panel-section">
         <h3>📊 状态信息</h3>
         <div class="info-item">
@@ -268,6 +297,32 @@
         <div class="info-item">
           <strong>贴图状态:</strong>
           <span class="info-value" id="mappingStatus">未映射</span>
+        </div>
+      </div>
+
+      <div class="panel-section" id="pointListSection" style="display: none">
+        <h3>📌 点位坐标</h3>
+        <div id="pointList" style="max-height: 300px; overflow-y: auto">
+          <!-- 点位列表将动态插入这里 -->
+        </div>
+      </div>
+
+      <!-- 导入/导出 -->
+      <div class="panel-section">
+        <h3>⬇️/⬆️ 导入导出</h3>
+        <div class="button-group">
+          <button id="btnExport" class="btn-primary">导出点位 (JSON)</button>
+          <button id="btnImport" class="btn-primary">导入点位 (JSON)</button>
+        </div>
+        <input
+          type="file"
+          id="importFileInput"
+          accept=".json"
+          style="display: none"
+        />
+        <div class="hint-text">
+          导出将下载一个 JSON 文件；导入请选择符合格式的 JSON 文件，格式示例:
+          {"points":[{"lon":121.42,"lat":29.67,"height":10},...]}
         </div>
       </div>
     </div>
@@ -319,21 +374,28 @@
       const drawHint = document.getElementById("drawHint");
       const pointCount = document.getElementById("pointCount");
       const videoStatus = document.getElementById("videoStatus");
-      const mappingStatus = document.getElementById("mappingStatus");
-
-      // 绘制相关变量
+      const mappingStatus = document.getElementById("mappingStatus"); // 绘制相关变量
       let drawing = false;
       let drawPositions = [];
       let drawEntity = null;
       let videoPolygonEntity = null;
+      let editMode = false; // 是否处于编辑模式
+      let addingPoint = false; // 是否处于添加点模式
+      let pointEntities = []; // 存储所有点实体
+      let draggedPointIndex = -1; // 当前拖动的点索引
+      let previewLine = null; // 预览线
       const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
 
       // 按钮绑定
       const btnStartDraw = document.getElementById("btnStartDraw");
       const btnFinishDraw = document.getElementById("btnFinishDraw");
+      const btnAddPoint = document.getElementById("btnAddPoint");
       const btnClearDraw = document.getElementById("btnClearDraw");
       const btnPlayPause = document.getElementById("btnPlayPause");
       const btnRestart = document.getElementById("btnRestart");
+      const btnExport = document.getElementById("btnExport");
+      const btnImport = document.getElementById("btnImport");
+      const importFileInput = document.getElementById("importFileInput");
 
       // 更新状态函数
       function updateStatus(text, isSuccess = true) {
@@ -361,9 +423,7 @@
         pointCount.textContent = "0";
         mappingStatus.textContent = "未映射";
         updateStatus("绘制中...");
-      };
-
-      // 完成绘制
+      }; // 完成绘制
       btnFinishDraw.onclick = () => {
         drawing = false;
         btnStartDraw.disabled = false;
@@ -374,18 +434,54 @@
           updateStatus("绘制失败", false);
           return;
         }
-        drawHint.textContent = "绘制完成！视频已映射到该区域";
+        drawHint.textContent = "绘制完成！可以拖动点位调整形状或添加新点";
         createVideoPolygon(drawPositions);
-        updateStatus("视频映射成功");
+        updateStatus("视频映射成功 - 可编辑模式");
         mappingStatus.textContent = "已映射";
+
+        // 进入编辑模式
+        editMode = true;
+        btnAddPoint.disabled = false;
+        createEditablePoints();
+        updatePointList();
       };
 
-      // 清除区域
+      // 添加点位按钮
+      btnAddPoint.onclick = () => {
+        if (!editMode) return;
+
+        addingPoint = !addingPoint;
+
+        if (addingPoint) {
+          btnAddPoint.textContent = "✓ 完成添加";
+          btnAddPoint.classList.remove("btn-primary");
+          btnAddPoint.classList.add("btn-success");
+          drawHint.textContent = "点击多边形边缘添加新点位";
+          updateStatus("添加点模式");
+        } else {
+          btnAddPoint.textContent = "➕ 添加点位";
+          btnAddPoint.classList.remove("btn-success");
+          btnAddPoint.classList.add("btn-primary");
+          drawHint.textContent = "绘制完成！可以拖动点位调整形状或添加新点";
+          updateStatus("编辑模式");
+
+          // 移除预览线
+          if (previewLine) {
+            viewer.entities.remove(previewLine);
+            previewLine = null;
+          }
+        }
+      }; // 清除区域
       btnClearDraw.onclick = () => {
         drawing = false;
+        editMode = false;
+        addingPoint = false;
         drawPositions = [];
+        pointEntities = [];
+        draggedPointIndex = -1;
         btnStartDraw.disabled = false;
         btnFinishDraw.disabled = true;
+        btnAddPoint.disabled = true;
 
         // 移除绘制实体
         if (drawEntity) {
@@ -397,6 +493,12 @@
         if (videoPolygonEntity) {
           viewer.entities.remove(videoPolygonEntity);
           videoPolygonEntity = null;
+        }
+
+        // 移除预览线
+        if (previewLine) {
+          viewer.entities.remove(previewLine);
+          previewLine = null;
         }
 
         // 移除所有点标记
@@ -414,6 +516,10 @@
           '点击"开始绘制"后,在地图上依次点击添加多边形顶点';
         pointCount.textContent = "0";
         mappingStatus.textContent = "未映射";
+
+        // 隐藏点位列表
+        document.getElementById("pointListSection").style.display = "none";
+
         updateStatus("就绪");
       };
 
@@ -430,9 +536,86 @@
       btnRestart.onclick = () => {
         video.currentTime = 0;
         video.play();
-      }; // 地图点击事件 - 采集点
+      };
+
+      // 导出点位为 JSON 并触发下载
+      function exportPoints() {
+        if (!drawPositions || drawPositions.length === 0) {
+          alert("没有可导出的点位");
+          return;
+        }
+        const pts = drawPositions.map((pos) => {
+          const carto = Cesium.Cartographic.fromCartesian(pos);
+          return {
+            lon: Number(Cesium.Math.toDegrees(carto.longitude).toFixed(6)),
+            lat: Number(Cesium.Math.toDegrees(carto.latitude).toFixed(6)),
+            height: Number(carto.height.toFixed(2)),
+          };
+        });
+        const payload = { points: pts };
+        const json = JSON.stringify(payload, null, 2);
+
+        // 触发下载
+        const blob = new Blob([json], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "points.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        // 也弹出预览（如果 JSON 不大）
+        alert("导出成功，已触发下载。JSON 预览:\n" + json.slice(0, 1000));
+      }
+
+      // 从解析后的对象导入点位 (格式: {points:[{lon,lat,height},...]})
+      function importPointsFromObject(obj) {
+        if (!obj || !Array.isArray(obj.points)) {
+          alert("导入 JSON 格式错误，需包含 points 数组");
+          return;
+        }
+        // 转换为 Cartesian3
+        drawPositions = obj.points.map((p) =>
+          Cesium.Cartesian3.fromDegrees(p.lon, p.lat, p.height || 0)
+        );
+
+        // 创建/更新视频多边形与点位
+        createVideoPolygon(drawPositions);
+        createEditablePoints();
+        updatePointList();
+        editMode = true;
+        btnAddPoint.disabled = false;
+        mappingStatus.textContent = "已映射";
+        updateStatus("已导入点位并映射");
+      }
+
+      // 处理文件输入
+      importFileInput.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const obj = JSON.parse(reader.result);
+            importPointsFromObject(obj);
+          } catch (err) {
+            alert("解析 JSON 失败: " + err);
+          }
+        };
+        reader.readAsText(file);
+        // 清空以便下次可以选同一个文件
+        importFileInput.value = null;
+      });
+
+      // 导入/导出按钮绑定
+      btnExport.onclick = exportPoints;
+      btnImport.onclick = () => importFileInput.click();
+
+      // 地图点击事件 - 采集点
       handler.setInputAction((movement) => {
-        if (!drawing) return;
+        if (!drawing && !addingPoint) return;
 
         const ray = viewer.camera.getPickRay(movement.position);
         const position = viewer.scene.globe.pick(ray, viewer.scene);
@@ -442,33 +625,59 @@
           return;
         }
 
-        drawPositions.push(position);
-        pointCount.textContent = drawPositions.length;
+        // 如果是绘制模式
+        if (drawing) {
+          drawPositions.push(position);
+          pointCount.textContent = drawPositions.length;
 
-        // 添加点标记
-        viewer.entities.add({
-          position: position,
-          point: {
-            pixelSize: 8,
-            color: Cesium.Color.YELLOW,
-            outlineColor: Cesium.Color.WHITE,
-            outlineWidth: 2,
-          },
-        });
-
-        if (!drawEntity) {
-          drawEntity = viewer.entities.add({
-            polygon: {
-              hierarchy: new Cesium.CallbackProperty(() => {
-                return new Cesium.PolygonHierarchy(drawPositions);
-              }, false),
-              material: Cesium.Color.YELLOW.withAlpha(0.3),
-              outline: true,
-              outlineColor: Cesium.Color.YELLOW,
-              outlineWidth: 3,
-              heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+          // 添加点标记
+          viewer.entities.add({
+            position: position,
+            point: {
+              pixelSize: 8,
+              color: Cesium.Color.YELLOW,
+              outlineColor: Cesium.Color.WHITE,
+              outlineWidth: 2,
             },
           });
+
+          if (!drawEntity) {
+            drawEntity = viewer.entities.add({
+              polygon: {
+                hierarchy: new Cesium.CallbackProperty(() => {
+                  return new Cesium.PolygonHierarchy(drawPositions);
+                }, false),
+                material: Cesium.Color.YELLOW.withAlpha(0.3),
+                outline: true,
+                outlineColor: Cesium.Color.YELLOW,
+                outlineWidth: 3,
+                heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+              },
+            });
+          }
+        }
+
+        // 如果是添加点模式
+        if (addingPoint) {
+          // 找到最近的边
+          const result = findClosestEdge(position);
+          if (result) {
+            // 在该边上插入新点
+            drawPositions.splice(result.insertIndex, 0, result.closestPoint);
+            pointCount.textContent = drawPositions.length;
+
+            // 更新所有内容
+            createEditablePoints();
+            updatePointList();
+
+            // 更新视频多边形
+            if (videoPolygonEntity) {
+              videoPolygonEntity.polygon.hierarchy =
+                new Cesium.PolygonHierarchy(drawPositions);
+            }
+
+            updateStatus(`已添加点位 P${result.insertIndex + 1}`);
+          }
         }
       }, Cesium.ScreenSpaceEventType.LEFT_CLICK); // 创建视频多边形
       function createVideoPolygon(positionsCartesian) {
@@ -518,9 +727,244 @@
             500
           ),
         });
-
         console.log("视频多边形创建成功");
-      } // 加载相机配置并飞行到位置
+      }
+
+      // 创建可编辑的点标记
+      function createEditablePoints() {
+        // 清除旧的点标记
+        pointEntities.forEach((entity) => {
+          if (entity) viewer.entities.remove(entity);
+        });
+        pointEntities = [];
+
+        // 为每个顶点创建可拖动的点标记
+        drawPositions.forEach((position, index) => {
+          const pointEntity = viewer.entities.add({
+            position: position,
+            point: {
+              pixelSize: 12,
+              color: Cesium.Color.RED,
+              outlineColor: Cesium.Color.WHITE,
+              outlineWidth: 2,
+              heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            },
+            label: {
+              text: `P${index + 1}`,
+              font: "12px sans-serif",
+              fillColor: Cesium.Color.WHITE,
+              outlineColor: Cesium.Color.BLACK,
+              outlineWidth: 2,
+              style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+              verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+              pixelOffset: new Cesium.Cartesian2(0, -15),
+              heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            },
+            properties: {
+              pointIndex: index,
+              draggable: true,
+            },
+          });
+          pointEntities.push(pointEntity);
+        });
+      }
+
+      // 更新点位列表显示
+      function updatePointList() {
+        const pointListSection = document.getElementById("pointListSection");
+        const pointList = document.getElementById("pointList");
+
+        pointListSection.style.display = "block";
+        pointList.innerHTML = "";
+
+        drawPositions.forEach((position, index) => {
+          const cartographic = Cesium.Cartographic.fromCartesian(position);
+          const lon = Cesium.Math.toDegrees(cartographic.longitude).toFixed(6);
+          const lat = Cesium.Math.toDegrees(cartographic.latitude).toFixed(6);
+          const height = cartographic.height.toFixed(2);
+
+          const pointItem = document.createElement("div");
+          pointItem.className = "point-item";
+          pointItem.innerHTML = `
+            <div class="point-item-header">点位 ${index + 1}</div>
+            <div class="point-coords">
+              经度: ${lon}°<br>
+              纬度: ${lat}°<br>
+              高度: ${height}m
+            </div>
+          `;
+          pointList.appendChild(pointItem);
+        });
+      } // 鼠标按下事件 - 开始拖动
+      handler.setInputAction((movement) => {
+        if (!editMode) return;
+
+        const pickedObject = viewer.scene.pick(movement.position);
+        if (
+          Cesium.defined(pickedObject) &&
+          Cesium.defined(pickedObject.id) &&
+          pickedObject.id.properties &&
+          pickedObject.id.properties.draggable
+        ) {
+          draggedPointIndex = pickedObject.id.properties.pointIndex;
+          viewer.scene.screenSpaceCameraController.enableRotate = false;
+          viewer.scene.screenSpaceCameraController.enableTranslate = false;
+          viewer.scene.screenSpaceCameraController.enableZoom = false;
+          viewer.scene.screenSpaceCameraController.enableTilt = false;
+          viewer.scene.screenSpaceCameraController.enableLook = false;
+        }
+      }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+
+      // 鼠标移动事件 - 拖动点位或显示预览
+      handler.setInputAction((movement) => {
+        // 如果正在拖动点位
+        if (editMode && draggedPointIndex !== -1) {
+          const ray = viewer.camera.getPickRay(movement.endPosition);
+          const position = viewer.scene.globe.pick(ray, viewer.scene);
+
+          if (position) {
+            // 更新点位位置
+            drawPositions[draggedPointIndex] = position;
+            pointEntities[draggedPointIndex].position = position;
+
+            // 更新视频多边形
+            if (videoPolygonEntity) {
+              videoPolygonEntity.polygon.hierarchy =
+                new Cesium.PolygonHierarchy(drawPositions);
+            }
+
+            // 更新点位列表
+            updatePointList();
+          }
+          return;
+        }
+
+        // 如果在添加点模式，显示预览线
+        if (addingPoint) {
+          const ray = viewer.camera.getPickRay(movement.endPosition);
+          const position = viewer.scene.globe.pick(ray, viewer.scene);
+
+          if (position) {
+            const result = findClosestEdge(position);
+            if (result) {
+              // 移除旧的预览线
+              if (previewLine) {
+                viewer.entities.remove(previewLine);
+              }
+
+              // 创建新的预览线
+              const p1 = drawPositions[result.edgeStartIndex];
+              const p2 = drawPositions[result.edgeEndIndex];
+
+              previewLine = viewer.entities.add({
+                polyline: {
+                  positions: [p1, result.closestPoint, p2],
+                  width: 3,
+                  material: new Cesium.PolylineDashMaterialProperty({
+                    color: Cesium.Color.CYAN,
+                    dashLength: 16,
+                  }),
+                  clampToGround: true,
+                },
+                point: {
+                  position: result.closestPoint,
+                  pixelSize: 10,
+                  color: Cesium.Color.CYAN,
+                  outlineColor: Cesium.Color.WHITE,
+                  outlineWidth: 2,
+                },
+              });
+            }
+          }
+        }
+      }, Cesium.ScreenSpaceEventType.MOUSE_MOVE); // 鼠标释放事件 - 结束拖动
+      handler.setInputAction(() => {
+        if (draggedPointIndex !== -1) {
+          draggedPointIndex = -1;
+          viewer.scene.screenSpaceCameraController.enableRotate = true;
+          viewer.scene.screenSpaceCameraController.enableTranslate = true;
+          viewer.scene.screenSpaceCameraController.enableZoom = true;
+          viewer.scene.screenSpaceCameraController.enableTilt = true;
+          viewer.scene.screenSpaceCameraController.enableLook = true;
+        }
+      }, Cesium.ScreenSpaceEventType.LEFT_UP);
+
+      // 找到最近的边，并计算点击位置在该边上的投影点
+      function findClosestEdge(clickPosition) {
+        if (drawPositions.length < 2) return null;
+
+        let minDistance = Infinity;
+        let closestEdgeIndex = -1;
+        let closestPoint = null;
+
+        // 遍历所有边
+        for (let i = 0; i < drawPositions.length; i++) {
+          const p1 = drawPositions[i];
+          const p2 = drawPositions[(i + 1) % drawPositions.length];
+
+          // 计算点到线段的最短距离和投影点
+          const result = getClosestPointOnSegment(clickPosition, p1, p2);
+
+          if (result.distance < minDistance) {
+            minDistance = result.distance;
+            closestEdgeIndex = i;
+            closestPoint = result.point;
+          }
+        }
+
+        if (closestEdgeIndex !== -1) {
+          return {
+            edgeStartIndex: closestEdgeIndex,
+            edgeEndIndex: (closestEdgeIndex + 1) % drawPositions.length,
+            insertIndex: closestEdgeIndex + 1,
+            closestPoint: closestPoint,
+            distance: minDistance,
+          };
+        }
+
+        return null;
+      }
+
+      // 计算点到线段的最短距离和投影点
+      function getClosestPointOnSegment(point, lineStart, lineEnd) {
+        // 将 Cartesian3 转换为向量
+        const ap = Cesium.Cartesian3.subtract(
+          point,
+          lineStart,
+          new Cesium.Cartesian3()
+        );
+        const ab = Cesium.Cartesian3.subtract(
+          lineEnd,
+          lineStart,
+          new Cesium.Cartesian3()
+        );
+
+        const ab2 = Cesium.Cartesian3.dot(ab, ab);
+        const ap_ab = Cesium.Cartesian3.dot(ap, ab);
+
+        // 计算投影比例
+        let t = ap_ab / ab2;
+
+        // 限制在线段范围内
+        t = Math.max(0, Math.min(1, t));
+
+        // 计算投影点
+        const closestPoint = Cesium.Cartesian3.add(
+          lineStart,
+          Cesium.Cartesian3.multiplyByScalar(ab, t, new Cesium.Cartesian3()),
+          new Cesium.Cartesian3()
+        );
+
+        // 计算距离
+        const distance = Cesium.Cartesian3.distance(point, closestPoint);
+
+        return {
+          point: closestPoint,
+          distance: distance,
+        };
+      }
+
+      // 加载相机配置并飞行到位置
       fetch("data/camera_config.json")
         .then((r) => r.json())
         .then((cfg) => {
@@ -614,3 +1058,4 @@
     </script>
   </body>
 </html>
+```

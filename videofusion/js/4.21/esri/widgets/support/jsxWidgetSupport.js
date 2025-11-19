@@ -1,5 +1,0 @@
-// All material copyright ESRI, All Rights Reserved, unless otherwise specified.
-// See https://js.arcgis.com/4.21/esri/copyright.txt for details.
-//>>built
-define(["exports","../../core/handleUtils"],function(e,m){function g(b,a){const d=a.children;if(d)for(var c=0;c<d.length;++c)d[c]=g(b,d[c]);c=a.vnodeSelector;return h(c)?(a=a.properties||n,{vnodeSelector:"div",properties:{key:a.key||c,parentWidget:b,widgetConstructor:c,widgetProps:a,widgetChildren:d||p,afterCreate:q,afterUpdate:r,afterRemoved:k},children:void 0,text:void 0,domNode:null}):a}function q(b,a,d,{key:c,parentWidget:t,widgetConstructor:u,widgetProps:v,widgetChildren:w}){a=new u({...v,key:c,
-children:w,container:b});f.set(b,a);null==a.afterCreate?void 0:a.afterCreate(a,b);t._internalHandles.add(m.makeHandle(()=>k(b)))}function r(b,a,d,{widgetProps:c}){if(a=f.get(b))a.set(c),null==a.afterUpdate?void 0:a.afterUpdate(a,b)}function k(b){const a=f.get(b);a&&(a.destroy(),f.delete(b))}function h(b){return"function"===typeof b&&b[l]}const l=Symbol("widget"),p=[],n={},f=new WeakMap;e.WIDGET_SYMBOL=l;e.isWidgetConstructor=h;e.processWidgets=g;Object.defineProperty(e,"__esModule",{value:!0})});
