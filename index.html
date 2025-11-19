@@ -60,19 +60,18 @@
         padding: 6px 12px;
         background: rgba(255, 255, 255, 0.2);
         border-radius: 20px;
-      }
-
-      /* 左侧控制面板 */
+      } /* 左侧控制面板 */
       #controlPanel {
         position: absolute;
         top: 80px;
         left: 20px;
         width: 300px;
+        max-height: calc(100vh - 100px);
         background: rgba(255, 255, 255, 0.95);
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         z-index: 1100;
-        overflow: hidden;
+        overflow-y: auto;
       }
 
       .panel-section {
@@ -197,12 +196,58 @@
         color: #333;
         margin-bottom: 4px;
       }
-
       .point-coords {
         color: #666;
         font-family: "Courier New", monospace;
         line-height: 1.4;
-      } /* 右侧视频预览 - 隐藏 */
+      }
+
+      /* 滑块样式 */
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 6px;
+        background: linear-gradient(to right, #667eea 0%, #764ba2 100%);
+        border-radius: 3px;
+        outline: none;
+        cursor: pointer;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        background: white;
+        border: 3px solid #667eea;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s ease;
+      }
+
+      input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        background: white;
+        border: 3px solid #667eea;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s ease;
+      }
+
+      input[type="range"]::-moz-range-thumb:hover {
+        transform: scale(1.2);
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+      }
+
+      /* 右侧视频预览 - 隐藏 */
       #videoContainer {
         display: none;
       }
@@ -300,6 +345,46 @@
         </div>
       </div>
 
+      <!-- 视频方向调节 -->
+      <div class="panel-section" id="rotationSection" style="display: none">
+        <h3>🔄 视频方向</h3>
+        <div class="info-item">
+          <strong>旋转角度:</strong>
+          <span class="info-value" id="rotationValue">0°</span>
+        </div>
+        <input
+          type="range"
+          id="rotationSlider"
+          min="0"
+          max="360"
+          value="0"
+          step="1"
+          style="width: 100%; margin-top: 10px"
+        />
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+          "
+        >
+          <span>0°</span>
+          <span>90°</span>
+          <span>180°</span>
+          <span>270°</span>
+          <span>360°</span>
+        </div>
+        <button
+          id="btnResetRotation"
+          class="btn-primary"
+          style="width: 100%; margin-top: 10px"
+        >
+          重置方向
+        </button>
+      </div>
+
       <div class="panel-section" id="pointListSection" style="display: none">
         <h3>📌 点位坐标</h3>
         <div id="pointList" style="max-height: 300px; overflow-y: auto">
@@ -321,8 +406,10 @@
           style="display: none"
         />
         <div class="hint-text">
-          导出将下载一个 JSON 文件；导入请选择符合格式的 JSON 文件，格式示例:
-          {"points":[{"lon":121.42,"lat":29.67,"height":10},...]}
+          导出将下载一个 JSON 文件（包含点位和旋转角度）；导入请选择符合格式的
+          JSON 文件，格式示例:
+          {"points":[{"lon":121.42,"lat":29.67,"height":10},...],
+          "rotation":45.0}
         </div>
       </div>
     </div>
@@ -365,16 +452,20 @@
       // 隐藏版权信息
       viewer.cesiumWidget.creditContainer.style.display = "none";
 
-      console.log("Cesium Viewer 初始化成功");
-
-      // UI 元素
+      console.log("Cesium Viewer 初始化成功"); // UI 元素
       const video = document.getElementById("videoSource");
       const videoResSpan = document.getElementById("videoRes");
       const statusText = document.getElementById("statusText");
       const drawHint = document.getElementById("drawHint");
       const pointCount = document.getElementById("pointCount");
       const videoStatus = document.getElementById("videoStatus");
-      const mappingStatus = document.getElementById("mappingStatus"); // 绘制相关变量
+      const mappingStatus = document.getElementById("mappingStatus");
+      const rotationSlider = document.getElementById("rotationSlider");
+      const rotationValue = document.getElementById("rotationValue");
+      const btnResetRotation = document.getElementById("btnResetRotation");
+      const rotationSection = document.getElementById("rotationSection");
+
+      // 绘制相关变量
       let drawing = false;
       let drawPositions = [];
       let drawEntity = null;
@@ -384,9 +475,8 @@
       let pointEntities = []; // 存储所有点实体
       let draggedPointIndex = -1; // 当前拖动的点索引
       let previewLine = null; // 预览线
-      const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
-
-      // 按钮绑定
+      let currentRotation = 0; // 当前视频旋转角度（弧度）
+      const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas); // 按钮绑定
       const btnStartDraw = document.getElementById("btnStartDraw");
       const btnFinishDraw = document.getElementById("btnFinishDraw");
       const btnAddPoint = document.getElementById("btnAddPoint");
@@ -396,6 +486,29 @@
       const btnExport = document.getElementById("btnExport");
       const btnImport = document.getElementById("btnImport");
       const importFileInput = document.getElementById("importFileInput");
+
+      // 旋转角度滑块事件
+      rotationSlider.addEventListener("input", (e) => {
+        const degrees = parseFloat(e.target.value);
+        currentRotation = Cesium.Math.toRadians(degrees);
+        rotationValue.textContent = `${degrees}°`;
+
+        // 更新视频多边形的旋转
+        if (videoPolygonEntity && videoPolygonEntity.polygon.material) {
+          updateVideoRotation(currentRotation);
+        }
+      });
+
+      // 重置旋转角度按钮
+      btnResetRotation.onclick = () => {
+        rotationSlider.value = 0;
+        currentRotation = 0;
+        rotationValue.textContent = "0°";
+
+        if (videoPolygonEntity && videoPolygonEntity.polygon.material) {
+          updateVideoRotation(0);
+        }
+      };
 
       // 更新状态函数
       function updateStatus(text, isSuccess = true) {
@@ -437,13 +550,14 @@
         drawHint.textContent = "绘制完成！可以拖动点位调整形状或添加新点";
         createVideoPolygon(drawPositions);
         updateStatus("视频映射成功 - 可编辑模式");
-        mappingStatus.textContent = "已映射";
-
-        // 进入编辑模式
+        mappingStatus.textContent = "已映射"; // 进入编辑模式
         editMode = true;
         btnAddPoint.disabled = false;
         createEditablePoints();
         updatePointList();
+
+        // 显示旋转控制面板
+        rotationSection.style.display = "block";
       };
 
       // 添加点位按钮
@@ -517,8 +631,14 @@
         pointCount.textContent = "0";
         mappingStatus.textContent = "未映射";
 
-        // 隐藏点位列表
+        // 隐藏点位列表和旋转控制面板
         document.getElementById("pointListSection").style.display = "none";
+        rotationSection.style.display = "none";
+
+        // 重置旋转角度
+        rotationSlider.value = 0;
+        currentRotation = 0;
+        rotationValue.textContent = "0°";
 
         updateStatus("就绪");
       };
@@ -536,9 +656,7 @@
       btnRestart.onclick = () => {
         video.currentTime = 0;
         video.play();
-      };
-
-      // 导出点位为 JSON 并触发下载
+      }; // 导出点位为 JSON 并触发下载
       function exportPoints() {
         if (!drawPositions || drawPositions.length === 0) {
           alert("没有可导出的点位");
@@ -552,7 +670,13 @@
             height: Number(carto.height.toFixed(2)),
           };
         });
-        const payload = { points: pts };
+
+        // 添加旋转角度参数（转换为度数）
+        const rotationDegrees = Cesium.Math.toDegrees(currentRotation);
+        const payload = {
+          points: pts,
+          rotation: Number(rotationDegrees.toFixed(2)),
+        };
         const json = JSON.stringify(payload, null, 2);
 
         // 触发下载
@@ -568,18 +692,28 @@
 
         // 也弹出预览（如果 JSON 不大）
         alert("导出成功，已触发下载。JSON 预览:\n" + json.slice(0, 1000));
-      }
-
-      // 从解析后的对象导入点位 (格式: {points:[{lon,lat,height},...]})
+      } // 从解析后的对象导入点位 (格式: {points:[{lon,lat,height},...], rotation:0})
       function importPointsFromObject(obj) {
         if (!obj || !Array.isArray(obj.points)) {
           alert("导入 JSON 格式错误，需包含 points 数组");
           return;
-        }
-        // 转换为 Cartesian3
+        } // 转换为 Cartesian3
         drawPositions = obj.points.map((p) =>
           Cesium.Cartesian3.fromDegrees(p.lon, p.lat, p.height || 0)
         );
+
+        // 导入旋转角度（如果存在）
+        if (obj.rotation !== undefined) {
+          const rotationDegrees = Number(obj.rotation) || 0;
+          currentRotation = Cesium.Math.toRadians(rotationDegrees);
+          rotationSlider.value = rotationDegrees;
+          rotationValue.textContent = `${rotationDegrees}°`;
+        } else {
+          // 如果没有旋转参数，重置为0
+          currentRotation = 0;
+          rotationSlider.value = 0;
+          rotationValue.textContent = "0°";
+        }
 
         // 创建/更新视频多边形与点位
         createVideoPolygon(drawPositions);
@@ -589,6 +723,9 @@
         btnAddPoint.disabled = false;
         mappingStatus.textContent = "已映射";
         updateStatus("已导入点位并映射");
+
+        // 显示旋转控制面板
+        rotationSection.style.display = "block";
       }
 
       // 处理文件输入
@@ -709,6 +846,7 @@
             hierarchy: new Cesium.PolygonHierarchy(positionsCartesian),
             material: material,
             heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            stRotation: currentRotation, // 设置初始旋转角度
           },
         });
 
@@ -728,6 +866,19 @@
           ),
         });
         console.log("视频多边形创建成功");
+      }
+
+      // 更新视频旋转角度
+      function updateVideoRotation(rotation) {
+        if (videoPolygonEntity && videoPolygonEntity.polygon) {
+          // 更新 stRotation 属性
+          videoPolygonEntity.polygon.stRotation = new Cesium.ConstantProperty(
+            rotation
+          );
+          console.log(
+            `视频旋转角度已更新: ${Cesium.Math.toDegrees(rotation)}°`
+          );
+        }
       }
 
       // 创建可编辑的点标记
